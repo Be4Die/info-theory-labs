@@ -109,25 +109,25 @@ class ShannonFanoCoding:
         
         total_freq = sum(freq for _, freq in symbols)
         
-        # Ищем оптимальное разделение, где первая группа <= второй
+        # Ищем оптимальное разделение по минимальной разнице частот
         best_diff = float('inf')
         best_index = 0
         current_freq = 0
         
+        # Перебираем все возможные точки разделения
         for i in range(len(symbols)):
             current_freq += symbols[i][1]
-            # Первая группа должна быть <= второй
-            if current_freq <= total_freq - current_freq:
-                diff = abs(2 * current_freq - total_freq)
-                if diff < best_diff:
-                    best_diff = diff
-                    best_index = i + 1
-            else:
-                break
+            other_freq = total_freq - current_freq
+            
+            # Вычисляем абсолютную разницу частот между группами
+            diff = abs(current_freq - other_freq)
+            
+            # Если нашли разбиение с меньшей разницей, обновляем
+            if diff < best_diff:
+                best_diff = diff
+                best_index = i + 1
         
-        if best_index == 0:
-            best_index = 1
-        
+        # Разделяем на две группы в найденной оптимальной точке
         group1 = symbols[:best_index]
         group2 = symbols[best_index:]
         
@@ -145,6 +145,7 @@ class ShannonFanoCoding:
         
         self._generate_codes_recursive(group1, current_code + '0')
         self._generate_codes_recursive(group2, current_code + '1')
+      
 
 class CodingApp:
     def __init__(self, root):
