@@ -139,6 +139,7 @@ def main():
     choice = input("Выбор: ")
     
     beta_prime = []
+    manual_input = False
     if choice == '0':
         while True:
             try:
@@ -156,6 +157,7 @@ def main():
         if len(beta_prime) != n:
             print(f"Ошибка: длина должна быть {n}")
             return
+        manual_input = True
     
     print(f"   β': " + " ".join(f"{b:>3}" for b in beta_prime))
     
@@ -187,11 +189,19 @@ def main():
         # Проверка, что исправленная последовательность совпадает с исходной
         if beta_corrected == beta:
             print("   ✓ Исправленная последовательность совпадает с исходной β")
+        elif manual_input:
+            print("   ✗ Исправленная последовательность НЕ совпадает с исходной β")
+            print("   В последовательности допущено более одной ошибки, алгоритм не применим!")
     else:
         if all(s == 0 for s in syndrome_prime):
             print("11. Ошибка не обнаружена (синдром нулевой)")
+            if manual_input and beta_prime != beta:
+                print("   ✗ Последовательность не совпадает с исходной β")
+                print("   В последовательности допущено более одной ошибки, алгоритм не применим!")
         else:
             print("11. Обнаружена ошибка, но позиция не определена")
+            if manual_input:
+                print("   В последовательности допущено более одной ошибки, алгоритм не применим!")
         print(f"12. Исходная β: " + " ".join(f"{b:>3}" for b in beta_prime))
 
 if __name__ == "__main__":
