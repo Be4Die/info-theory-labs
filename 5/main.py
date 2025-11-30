@@ -101,7 +101,7 @@ d0 = 2 * t + 1
 print(f"d0 = 2t + 1 = 2*{t} + 1 = {d0}")
 
 # Выбор образующего многочлена
-polynomials1 = [p for p in polynomials if len(p) >= r]
+polynomials1 = [p for p in polynomials if len(p) - 1 >= r]
 print("\nУсловие 1: длина многочлена >= r")
 print("Многочлены1:", polynomials1)
 
