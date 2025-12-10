@@ -279,26 +279,69 @@ def get_polynomial_from_table(h, i):
     return polynomials_table[i_index][h_index]
 
 
+def find_bch_candidates(k):
+    """Найти все подходящие параметры БЧХ кода для заданного k"""
+    candidates = []
+    for n, k_table, r, s_table in bch_table:
+        if k_table == k:
+            candidates.append((n, k_table, r, s_table))
+    return candidates
+
+
 # Ввод данных
 a = input("Введите исходную двоичную последовательность: ").strip()
-s = int(input("Введите число исправляемых ошибок s: "))
 
 # Расчет параметров
 k = len(a)
 print(f"Число информационных разрядов k = {k}")
 
-# Поиск параметров в таблице БЧХ
-n, k_table, r, s_table = find_bch_params(k, s)
-if n is None:
-    print("Подходящие параметры БЧХ кода не найдены!")
-    exit()
+# Поиск всех подходящих параметров в таблице БЧХ
+candidates = find_bch_candidates(k)
 
-print(f"Найденные параметры БЧХ кода: n={n}, k={k_table}, r={r}, s={s_table}")
+if not candidates:
+    # Если нет точного совпадения, ищем ближайший больший k_table
+    for n, k_table, r, s_table in bch_table:
+        if k_table > k:
+            candidates.append((n, k_table, r, s_table))
+            break
 
-# Дополнение исходной последовательности до k_table
-if k < k_table:
+    if not candidates:
+        print("Подходящие параметры БЧХ кода не найдены!")
+        exit()
+
+    # Дополнение исходной последовательности до k_table
+    k_table = candidates[0][1]
     a = "0" * (k_table - k) + a
     print(f"Исходная последовательность дополнена до {k_table} бит: {a}")
+    n, k_table, r, s_table = candidates[0]
+    print(f"Найденные параметры БЧХ кода: n={n}, k={k_table}, r={r}, s={s_table}")
+else:
+    # Если есть несколько вариантов, предлагаем выбрать
+    if len(candidates) > 1:
+        print("\nНайдено несколько вариантов параметров БЧХ кода:")
+        for i, (n, k_table, r, s_table) in enumerate(candidates, 1):
+            print(f"{i}: n={n}, k={k_table}, r={r}, s={s_table}")
+
+        choice = int(
+            input(
+                "\nВыберите номер варианта (1-" + str(len(candidates)) + "): "
+            ).strip()
+        )
+        while choice < 1 or choice > len(candidates):
+            choice = int(
+                input(
+                    "Неверный выбор. Введите номер от 1 до "
+                    + str(len(candidates))
+                    + ": "
+                ).strip()
+            )
+
+        n, k_table, r, s_table = candidates[choice - 1]
+    else:
+        # Если вариант только один, используем его
+        n, k_table, r, s_table = candidates[0]
+
+    print(f"Выбранные параметры БЧХ кода: n={n}, k={k_table}, r={r}, s={s_table}")
 
 # Вычисление h
 h = math.ceil(math.log2(n + 1))
@@ -306,7 +349,7 @@ print(f"h = ⌈log2({n}+1)⌉ = {h}")
 
 # Вычисление индексов для минимальных многочленов
 indices = []
-for i in range(2 * s - 1, 0, -2):
+for i in range(2 * s_table - 1, 0, -2):
     indices.append(i)
 print(f"Индексы для минимальных многочленов: {indices}")
 
@@ -347,7 +390,7 @@ choice = input("Ваш выбор: ").strip()
 beta_prime = ""
 if choice == "1":
     positions = list(map(int, input("Введите позиции ошибок через пробел: ").split()))
-    if len(positions) > s:
+    if len(positions) > s_table:
         print("Количество ошибок превышает корректирующую способность!")
         exit()
     if any(p >= len(beta) for p in positions):
@@ -366,7 +409,7 @@ else:
     if len(beta_prime) != len(beta):
         print("Длина Бетта' не совпадает с длиной Бетта!")
         exit()
-    if binary_weight(binary_addition(beta, beta_prime)) > s:
+    if binary_weight(binary_addition(beta, beta_prime)) > s_table:
         print("Количество ошибок превышает корректирующую способность!")
         exit()
 
@@ -384,7 +427,7 @@ while shifts < max_shifts:
     weight = binary_weight(remainder)
     print(f"Сдвиг {shifts}: остаток {remainder}, вес {weight}")
 
-    if weight <= s:
+    if weight <= s_table:
         found = True
         break
 
